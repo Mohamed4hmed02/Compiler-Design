@@ -23,8 +23,9 @@ namespace Compiler_Design
             for (int i = 0; i < expression.Length - 1; i++)
             {
                 strBuilder.Append(expression[i]);
-
-                if (!_special.Contains(expression[i]) && !_special.Contains(expression[i + 1]))
+                //za|bb*|aa|n+b
+                if ((!_special.Contains(expression[i]) && !_special.Contains(expression[i + 1])) ||
+                    ((expression[i] == '*' || expression[i] == '+') && !_special.Contains(expression[i + 1])))
                     strBuilder.Append('.');
             }
             strBuilder.Append(expression.Last());
@@ -39,21 +40,6 @@ namespace Compiler_Design
 
             return _tables;
         }
-
-        //private void ConstructNfa(Tree<Body>.Node node)
-        //{
-        //    if (node.Left is not null)
-        //    {
-        //        ConstructNfa(node.Left);
-        //        _tables.Add(Determine(node.Left));
-        //    }
-
-        //    if (node.Right is not null)
-        //    {
-        //        ConstructNfa(node.Right);
-        //        _tables.Add(Determine(node.Right));
-        //    }
-        //}
 
         private void ConstructNfa(Tree<Body>.Node? node)
         {
@@ -86,6 +72,8 @@ namespace Compiler_Design
 
             for (int i = 0; i < expression.Length; i++)
             {
+                //0123456789
+                //z.a|b.b*|a.a|n*.b
                 if (expression[i] == '|')
                 {
                     var rightNode = new Tree<Body>.Node
@@ -113,20 +101,32 @@ namespace Compiler_Design
                 }
                 else if (expression[i] == '.')
                 {
+                    string rightExpression = expression[i + 1].ToString();
+                    if ((i + 2) < expression.Length && (expression[i + 2] == '*' || expression[i + 2] == '+'))
+                        rightExpression += expression[i + 2];
+
                     var rightNode = new Tree<Body>.Node
                     {
                         Body = new Body
                         {
-                            Expression = expression[(i + 1)..],
+                            Expression = rightExpression,
                             Operator = _noneOperator
                         },
                     };
+
+                    int lp = lastPoint;
+                    if (i - lp==0)
+                    {
+                        int j = lp;
+                        while (j-- > 0 && expression[j] != '|') ;
+                        lp = ++j;
+                    }
 
                     tree.InsertFromLeft(new Tree<Body>.Node
                     {
                         Body = new Body
                         {
-                            Expression = expression.Substring(lastPoint, i - lastPoint),
+                            Expression = expression.Substring(lp, i - lp),
                             Operator = '.',
                             RightOperatorNode = rightNode
                         }
@@ -164,7 +164,7 @@ namespace Compiler_Design
                 }
                 else if (expression[i] == '(')
                 {
-
+                    // implementation
                 }
             }
 

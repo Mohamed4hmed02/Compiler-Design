@@ -2,7 +2,7 @@
 
 var nfa = new RegexToNfa();
 
-var tbls = nfa.Transform("za|bb*|aa|n+");
+var tbls = nfa.Transform("za|bb*|aa|n+bb*");
 foreach (var tbl in tbls)
 {
     Console.WriteLine(tbl.Name);
